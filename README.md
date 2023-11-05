@@ -1,31 +1,32 @@
 # PiTailAP
 
-## Instructions on using a Raspberry Pi - Tailscale Exit node on non tailscale devices with Wireless Hotspot
-Use https://www.christopherlouvet.com/posts/apple-tv-tailscale/ for reference
+## Instructions on using a Raspberry Pi - Tailscale Exit node on non-Tailscale devices with Wireless Hotspot
+
+Use [Christoper Louvets](https://www.christopherlouvet.com/posts/apple-tv-tailscale/) guide for additional guidance.
 
 ### Requirements:
 1. Raspberry Pi (With Ethernet and Wi-Fi)
 2. SD Card
 
-#### Step 1 - SSH to Raspberry pi
-```ssh pi@raspberrypi.local ``` 
-Default Password should be raspberry
+#### Step 1 - SSH to Raspberry Pi
+```ssh pi@raspberrypi.local```
+
+Default Password should be raspberry.
+
 #### Step 2 - Perform an Update
 ```sudo apt update && sudo apt upgrade -y```
-#### Step 3 - Verify WLAN0 exists and set correct country-code
+
+#### Step 3 - Verify WLAN0 exists and set the correct country code
 
 See available Network interfaces
-
 ```ifconfig```
 
 Enter Raspberry Pi Configuration
-
 ```sudo raspi-config```
 
-go to - 5 Localization options > L4 WLAN country > Set country
+Go to - 5 Localization options > L4 WLAN country > Set country
 
 #### Step 4 - Install required programs and configure AP
-
 ```
 sudo apt install -y hostapd dnsmasq iptables
 
@@ -39,13 +40,14 @@ interface wlan0
     nohook wpa_supplicant
     metric 500
 ```
-crtl + x to save Y to confirm
+Press ctrl + x to save, Y to confirm.
 ```
 sudo systemctl restart dhcpcd
 
 sudo nano /etc/hostapd/hostapd.conf
 ```
-Enter the followinf informarion to that file
+Enter the following information into that file:
+
 ```
 interface=wlan0
 
@@ -68,7 +70,7 @@ ssid=Tailscale
 #The network passphrase
 wpa_passphrase=12345678
 ```
-ctrl + x to save Y to confirm
+Press ctrl + x to save, Y to confirm.
 ```
 sudo sed -i 's|#DAEMON_CONF=\"\"|DAEMON_CONF=\"/etc/hostapd/hostapd.conf\"|g' /etc/default/hostapd
 
@@ -76,13 +78,14 @@ sudo mv /etc/dnsmasq.conf /etc/dnsmasq.conf.bak
 
 sudo nano /etc/dnsmasq.conf
 ```
-Enter Following information
+Enter the following information:
+
 ```
 interface=wlan0      # Use interface wlan0
 server=1.1.1.1       # Use Cloudflare DNS
 dhcp-range=10.0.1.100,10.0.1.110,12h # IP range and lease time #Change this range if interface ip is different
 ```
-ctrl + x to save Y to confirm
+Press ctrl + x to save, Y to confirm.
 ```
 sudo sed -i 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
 sudo sed -i 's/#net.ipv6.conf.all.forwarding=1/net.ipv6.conf.all.forwarding=1/g' /etc/sysctl.conf
@@ -93,7 +96,8 @@ sudo sh -c "iptables-save > /etc/iptables.ipv4.nat"
 
 sudo nano /etc/rc.local
 ```
-Enter the following line before exit 0
+Enter the following line before 'exit 0':
+
 ```iptables-restore < /etc/iptables.ipv4.nat```
 Restart Services
 ```
@@ -124,7 +128,7 @@ To disconnect from the exit-node
 
 ```sudo tailscale up --reset```
 
-or if you are not using --exit-node-allow-lan-access flag, use
+Or if you are not using --exit-node-allow-lan-access flag, use
 
 ```sudo tailscale up --exit-node```
 
